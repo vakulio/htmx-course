@@ -5,6 +5,16 @@ const courseGoals = [];
 
 const app = express();
 
+function renderGoals({id, text}) {
+  return `<li>
+            <span>${text}</span>
+            <button 
+              hx-delete="/goal/${id}" 
+              hx-target="closest li"
+            >Remove</button>
+        </li>`;
+}
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
 
@@ -27,10 +37,11 @@ app.get('/', (req, res) => {
           hx-post="/goal" 
           hx-target="#goals"
           hx-swap="beforeend"
+          hx-on::after-request="this.reset()"
           >
             <div>
               <label htmlFor="goal">Goal</label>
-              <input type="text" id="goal" name="goal" />
+              <input type="text" id="goal" name="goal" required />
             </div>
             <button type="submit">Add goal</button>
           </form>
@@ -38,15 +49,7 @@ app.get('/', (req, res) => {
         <section>
           <ul id="goals" hx-swap="outerHTML">
           ${courseGoals.map(
-            (goal) => `
-            <li id="goal-${goal.id}">
-              <span>${goal.text}</span>
-              <button 
-                hx-delete="/goal/${goal.id}" 
-                hx-target="#goal-${goal.id}"
-              >Remove</button>
-            </li>
-          `
+            (goal) => renderGoals(goal)
           ).join('')}
           </ul>
         </section>
@@ -60,13 +63,7 @@ app.post('/goal', (req, res) => {
   const goalText = req.body.goal;
   const goal = { text: goalText, id: randomUUID() };
   courseGoals.push(goal);
-  res.send(`<li id="goal-${goal.id}">
-              <span>${goal.text}</span>
-              <button 
-                hx-delete="/goal/${goal.id}" 
-                hx-target="#goal-${goal.id}"
-              >Remove</button>
-            </li>`);
+  res.send(renderGoals(goal));
 });
 
 app.delete('/goal/:id', (req, res) => {
