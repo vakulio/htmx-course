@@ -1,4 +1,5 @@
 import express from 'express';
+import { randomUUID } from 'crypto';
 
 const courseGoals = [];
 
@@ -35,15 +36,14 @@ app.get('/', (req, res) => {
           </form>
         </section>
         <section>
-          <ul id="goals">
+          <ul id="goals" hx-swap="outerHTML">
           ${courseGoals.map(
-            (goal, index) => `
-            <li id="goal-${index}">
-              <span>${goal}</span>
+            (goal) => `
+            <li id="goal-${goal.id}">
+              <span>${goal.text}</span>
               <button 
-                hx-delete="/goal/${index}" 
-                hx-target="#goal-${index}"
-                hx-swap="outerHTML"
+                hx-delete="/goal/${goal.id}" 
+                hx-target="#goal-${goal.id}"
               >Remove</button>
             </li>
           `
@@ -57,21 +57,22 @@ app.get('/', (req, res) => {
 });
 
 app.post('/goal', (req, res) => {
-  const goal = req.body.goal;
+  const goalText = req.body.goal;
+  const goal = { text: goalText, id: randomUUID() };
   courseGoals.push(goal);
-  res.send(`<li id="goal-${courseGoals.length - 1}">
-              <span>${goal}</span>
+  res.send(`<li id="goal-${goal.id}">
+              <span>${goal.text}</span>
               <button 
-                hx-delete="/goal/${courseGoals.length - 1}" 
-                hx-target="#goal-${courseGoals.length - 1}"
-                hx-swap="outerHTML"
+                hx-delete="/goal/${goal.id}" 
+                hx-target="#goal-${goal.id}"
               >Remove</button>
             </li>`);
 });
 
-app.delete('/goal/:idx', (req, res) => {
-  const id = req.params.idx;
-  courseGoals.splice(id, 1);
+app.delete('/goal/:id', (req, res) => {
+  const id = req.params.id;
+  const deleted = courseGoals.findIndex((goal) => goal.id === id);
+  courseGoals.splice(deleted, 1);
   res.send();
 })
 
