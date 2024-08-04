@@ -4,12 +4,15 @@ export default function renderLocation(location, isAvaliable = true) {
     attributes = `hx-post="/places" 
       hx-vals='{"locationId": "${location.id}"}'
       hx-target="#interesting-locations"
-      hx-swap="beforeend show:top"`;
+      hx-swap="beforeend show:#interesting-locations-section:top"
+      data-action="add"
+      `;
   } else {
     attributes = `hx-delete="/places/${location.id}"
-      hx-confirm='Are you sure you want to delete this location?'
       hx-target="closest li"
-      hx-swap="outerHTML"`;
+      hx-swap="outerHTML"
+      data-action="remove"
+     `;
   }
   return `
     <li class="location-item">
